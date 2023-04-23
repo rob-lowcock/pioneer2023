@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "watch-server": "cd server && nodemon --signal SIGINT --exec \"go run\" main.go",
+    "watch-client": "cd client && npm run dev",
+    "watch": "concurrently \"npm:watch-server\" \"npm:watch-client\""
+  }
+}

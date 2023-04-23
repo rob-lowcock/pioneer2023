@@ -1,0 +1,10 @@
+{
+    "ignore": [
+        ".git"
+    ],
+    "verbose": true,
+    "watch": [
+        "server/"
+    ],
+    "ext": "go"
+}
