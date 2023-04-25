@@ -1,15 +1,16 @@
 package db
 
 import (
-	"database/sql"
+	"context"
 	"os"
 
+	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq"
 )
 
 type Db struct {
 }
 
-func (d *Db) Connect() (*sql.DB, error) {
-	return sql.Open("postgres", os.Getenv("DATABASE_URL"))
+func (d *Db) Connect() (*pgx.Conn, error) {
+	return pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 }
