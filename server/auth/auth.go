@@ -1,50 +1,48 @@
 package auth
 
 import (
-	"log"
-	"time"
+	"os"
 
-	"github.com/go-oauth2/oauth2/v4/errors"
-	"github.com/go-oauth2/oauth2/v4/manage"
-	"github.com/go-oauth2/oauth2/v4/server"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v4"
-	pg "github.com/vgarvardt/go-oauth2-pg/v4"
-	"github.com/vgarvardt/go-pg-adapter/pgx4adapter"
+	"github.com/rob-lowcock/pioneer2023/db"
+	"github.com/rob-lowcock/pioneer2023/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
-	Db *pgx.Conn
+	Db     *pgx.Conn
+	DbUser db.User
 }
 
-func (a Auth) BuildServer() (*server.Server, error) {
-	manager := manage.NewDefaultManager()
-	adapter := pgx4adapter.NewConn(a.Db)
-	tokenStore, err := pg.NewTokenStore(adapter, pg.WithTokenStoreGCInterval(time.Minute))
+func (a *Auth) ValidateCredentials(username, password string) (models.User, error) {
+	user, err := a.DbUser.GetUserByUsername(username)
 	if err != nil {
-		return nil, err
-	}
-	defer tokenStore.Close()
-
-	clientStore, err := pg.NewClientStore(adapter)
-	if err != nil {
-		return nil, err
+		return models.User{}, err
 	}
 
-	manager.MapTokenStorage(tokenStore)
-	manager.MapClientStorage(clientStore)
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return models.User{}, err
+	}
 
-	srv := server.NewDefaultServer(manager)
-	srv.SetAllowGetAccessRequest(true)
-	srv.SetClientInfoHandler(server.ClientFormHandler)
+	return user, nil
+}
 
-	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
-		log.Println("Auth internal error:", err.Error())
-		return
+func (a *Auth) GenerateToken(user models.User) (string, error) {
+	key := os.Getenv("JWT_SECRET")
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.Username,
+	})
+	return t.SignedString([]byte(key))
+}
+
+func (a *Auth) ValidateToken(token string) error {
+
+	jwt.WithValidMethods([]string{"HS256"})
+	_, err := jwt.NewParser(jwt.WithValidMethods([]string{"HS256"})).ParseWithClaims(token, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
-	srv.SetResponseErrorHandler(func(re *errors.Response) {
-		log.Println("Auth response error:", re.Error.Error())
-	})
-
-	return srv, nil
+	return err
 }

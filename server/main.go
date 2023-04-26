@@ -25,25 +25,18 @@ func main() {
 	}
 	defer connection.Close(context.Background())
 
-	auth := auth.Auth{
+	dbUser := db.User{
 		Db: connection,
 	}
 
-	authServer, err := auth.BuildServer()
-	if err != nil {
-		log.Fatal("Auth setup error", err)
+	auth := auth.Auth{
+		Db:     connection,
+		DbUser: dbUser,
 	}
 
-	http.Handle("/", &handlers.LoginHandler{})
-	http.Handle("/health", &handlers.HealthHandler{})
-	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-		err := authServer.HandleAuthorizeRequest(w, r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-	})
-	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		authServer.HandleTokenRequest(w, r)
+	http.Handle("/api/health", &handlers.HealthHandler{})
+	http.Handle("/api/login", &handlers.LoginHandler{
+		Auth: auth,
 	})
 
 	done := make(chan os.Signal, 1)
