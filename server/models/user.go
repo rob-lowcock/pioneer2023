@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	Id       string
-	Username string
-	Password string
+	ID       string `jsonapi:"primary,user"`
+	Username string `jsonapi:"attr,username"`
+	Password string `jsonapi:"attr,password"`
 }

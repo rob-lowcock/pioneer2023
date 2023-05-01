@@ -13,6 +13,8 @@ export default {
         'brdgray': '#DDDEDF',
         'black': '#15171a',
         'slate': '#7C8B9A',
+        'jade': '#57A773',
+        'red': '#B20D30',
       },
     },
   },

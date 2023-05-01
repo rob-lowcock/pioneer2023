@@ -1,5 +1,5 @@
 package models
 
 type JWT struct {
-	Token string `json:"token"`
+	ID string `jsonapi:"primary,token"`
 }
