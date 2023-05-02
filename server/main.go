@@ -12,6 +12,7 @@ import (
 	"github.com/rob-lowcock/pioneer2023/auth"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/handlers"
+	"github.com/rob-lowcock/pioneer2023/helpers"
 )
 
 func main() {
@@ -34,10 +35,18 @@ func main() {
 		DbUser: dbUser,
 	}
 
+	middleware := helpers.Middleware{}
+
 	http.Handle("/api/health", &handlers.HealthHandler{})
-	http.Handle("/api/login", &handlers.LoginHandler{
-		Auth: auth,
-	})
+	http.Handle(
+		"/api/login",
+		middleware.Cors(
+			middleware.ContentType(&handlers.LoginHandler{
+				Auth: auth,
+			}),
+			http.MethodPost,
+		),
+	)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
