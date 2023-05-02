@@ -35,16 +35,21 @@ func main() {
 		DbUser: dbUser,
 	}
 
+	// Handlers
+	loginHandler := handlers.LoginHandler{
+		Auth: auth,
+	}
+	healthHandler := handlers.HealthHandler{}
+
 	middleware := helpers.Middleware{}
 
-	http.Handle("/api/health", &handlers.HealthHandler{})
+	http.Handle("/api/health", middleware.ContentType(&healthHandler))
 	http.Handle(
 		"/api/login",
-		middleware.Cors(
-			middleware.ContentType(&handlers.LoginHandler{
-				Auth: auth,
-			}),
-			http.MethodPost,
+		middleware.Adapt(
+			&loginHandler,
+			middleware.ContentType,
+			middleware.Cors(http.MethodPost),
 		),
 	)
 
