@@ -11,6 +11,7 @@ export default {
       colors: {
         'webscale': '#6298BC',
         'webscale-lighter': '#70A1C2',
+        'webscale-lighter2': '#78A4C8',
         'bggray': '#F3F3F3',
         'brdgray': '#DDDEDF',
         'black': '#15171a',
@@ -20,7 +21,7 @@ export default {
       },
       fontFamily: {
         'title': ['Manrope', ...defaultTheme.fontFamily.sans],
-        'sans': ['Manrope', ...defaultTheme.fontFamily.sans],
+        'sans': ['Inter', ...defaultTheme.fontFamily.sans],
         'serif': ['Libre Baskerville', ...defaultTheme.fontFamily.sans],
       }
     },
