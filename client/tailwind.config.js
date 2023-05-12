@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 export default {
   content: [
     "./index.html",
@@ -16,6 +18,11 @@ export default {
         'jade': '#57A773',
         'red': '#B20D30',
       },
+      fontFamily: {
+        'title': ['Manrope', ...defaultTheme.fontFamily.sans],
+        'sans': ['Manrope', ...defaultTheme.fontFamily.sans],
+        'serif': ['Libre Baskerville', ...defaultTheme.fontFamily.sans],
+      }
     },
   },
   plugins: [

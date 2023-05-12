@@ -10,6 +10,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*
+This comes with a massive health warning. JWTs are vulnerable to CSRF attacks. In time this will all need to be replaced with Auth0 or similar, but for the MVP this will have to do.
+*/
 type Auth struct {
 	Db     *pgx.Conn
 	DbUser db.User
