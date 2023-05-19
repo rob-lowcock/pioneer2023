@@ -1,0 +1,6 @@
+{
+    "scripts": {
+        "migrate-up": "source env/.env; migrate -source file://db/migrations -database ${DATABASE_URL} up",
+        "migrate-down": "source env/.env; migrate -source file://db/migrations -database ${DATABASE_URL} down"
+    }
+}

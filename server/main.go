@@ -30,6 +30,10 @@ func main() {
 		Db: connection,
 	}
 
+	dbRetrocard := db.Retrocard{
+		Db: connection,
+	}
+
 	auth := auth.Auth{
 		Db:     connection,
 		DbUser: dbUser,
@@ -40,6 +44,9 @@ func main() {
 		Auth: auth,
 	}
 	healthHandler := handlers.HealthHandler{}
+	retrocardHandler := handlers.RetrocardHandler{
+		RetrocardDb: dbRetrocard,
+	}
 
 	middleware := helpers.Middleware{}
 
@@ -50,6 +57,14 @@ func main() {
 			&loginHandler,
 			middleware.ContentType,
 			middleware.Cors(http.MethodPost),
+		),
+	)
+	http.Handle(
+		"/api/retrocards",
+		middleware.Adapt(
+			&retrocardHandler,
+			middleware.ContentType,
+			middleware.Cors(http.MethodGet),
 		),
 	)
 

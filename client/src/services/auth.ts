@@ -18,15 +18,14 @@ export async function attemptLogin(email: string, password: string) {
 
     if (response.ok) {
         return await response.json();
-    } else {
-        switch (response.status) {
-            case 401:
-                throw new Error('Invalid email or password');
-            case 500:
-                throw new Error('Oops! Something went wrong on our side - please try again');
-            default:
-                throw new Error('Something went wrong - please try again');
-        }
     }
 
+    switch (response.status) {
+        case 401:
+            throw new Error('Invalid email or password');
+        case 500:
+            throw new Error('Oops! Something went wrong on our side - please try again');
+        default:
+            throw new Error('Something went wrong - please try again');
+    }
 }

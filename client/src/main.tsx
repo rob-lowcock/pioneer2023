@@ -5,7 +5,7 @@ import Root from './routes/root'
 import Login, {
   action as loginAction
 } from './routes/login'
-import Retro from './routes/retro'
+import Retro, { loader as retroLoader } from './routes/retro'
 import './index.css'
 
 const router = createBrowserRouter([
@@ -20,6 +20,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/retro',
+    loader: retroLoader,
     element: <Retro />,
   }
 ])
