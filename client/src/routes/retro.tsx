@@ -23,7 +23,7 @@ export async function loader() {
             name: "I'm sad about...",
             cards: cards.data.filter((card: any) => card.attributes.column === 2),
         },
-    ]
+    ];
 
     return { columns };
 }
@@ -56,7 +56,9 @@ export default function Retro() {
                             ))}
                         </>
                     ) : (
-                        <></>
+                        <>
+                            <p className="text-center text-sm text-gray-500">Nothing here yet! Be the first to add something!</p>
+                        </>
                     )}
                 </Retrocolumn>
             ))}
