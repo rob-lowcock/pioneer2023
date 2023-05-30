@@ -9,11 +9,11 @@ import (
 	"github.com/rob-lowcock/pioneer2023/models"
 )
 
-type RetrocardHandler struct {
+type GetRetrocardHandler struct {
 	RetrocardDb db.Retrocard
 }
 
-func (h RetrocardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h GetRetrocardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cards, err := h.RetrocardDb.GetActiveCards()
 
 	if err != nil {

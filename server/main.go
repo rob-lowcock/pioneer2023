@@ -44,7 +44,7 @@ func main() {
 		Auth: auth,
 	}
 	healthHandler := handlers.HealthHandler{}
-	retrocardHandler := handlers.RetrocardHandler{
+	getRetrocardHandler := handlers.GetRetrocardHandler{
 		RetrocardDb: dbRetrocard,
 	}
 
@@ -62,7 +62,7 @@ func main() {
 	http.Handle(
 		"/api/retrocards",
 		middleware.Adapt(
-			&retrocardHandler,
+			&getRetrocardHandler,
 			middleware.ContentType,
 			middleware.Cors(http.MethodGet),
 		),

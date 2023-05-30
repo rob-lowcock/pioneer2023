@@ -30,3 +30,8 @@ func (r *Retrocard) GetActiveCards() ([]models.Retrocard, error) {
 
 	return retrocards, nil
 }
+
+func (r *Retrocard) CreateRetrocard(retrocard models.Retrocard) error {
+	_, err := r.Db.Exec(context.Background(), `INSERT INTO retrocards (title, column, active) VALUES ($1, $2, $3)`, retrocard.Title, retrocard.Column, retrocard.Active)
+	return err
+}
