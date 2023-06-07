@@ -36,12 +36,12 @@ export async function createRetrocard(retrocard: RetrocardType) {
     });
 
     if (response.ok) {
-        return await response.json();
+        return;
     }
 
     switch (response.status) {
-        case 401:
-            throw new Error('Invalid email or password');
+        case 400:
+            throw new Error('Invalid input');
         case 500:
             throw new Error('Oops! Something went wrong on our side - please try again');
         default:

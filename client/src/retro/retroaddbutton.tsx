@@ -2,12 +2,13 @@ import { FaceSmileIcon } from "@heroicons/react/24/outline";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useRef, useState } from "react";
 import Picker from '@emoji-mart/react';
-import { Form } from "react-router-dom";
+import { Form, useActionData } from "react-router-dom";
 
 export default function RetroAddButton(props: any) {
     const [showForm, setShowForm] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const action = useActionData();
 
     const toggleForm = (e : React.MouseEvent<HTMLAnchorElement>) => {
         setShowForm(!showForm);
@@ -25,6 +26,10 @@ export default function RetroAddButton(props: any) {
 
     const pickerEvent = (emoji: any) => {
         inputRef.current!.value += emoji.native
+    }
+
+    if (action?.errors?.message == "" && inputRef.current != null) {
+        inputRef.current!.value = "";
     }
 
     return <>

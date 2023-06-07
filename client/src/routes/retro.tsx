@@ -2,7 +2,7 @@ import { Bars2Icon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Retrocolumn from "../retro/retrocolumn";
 import Retrocard from "../retro/retrocard";
 import { RetrocardType, createRetrocard, getLatestBoard } from "../services/retro";
-import { Form, useLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 
 export async function action({ request }: { request: Request }) {
     const formData = await request.formData();
@@ -19,9 +19,13 @@ export async function action({ request }: { request: Request }) {
         active: true,
     }
 
-    const card = await createRetrocard(retrocard);
+    try {
+        await createRetrocard(retrocard);
+    } catch (e : any) {
+        errors.message = e.message;
+    }
 
-    return {card};
+    return {errors};
 }
 
 export async function loader() {

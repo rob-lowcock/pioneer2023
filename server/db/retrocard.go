@@ -33,7 +33,14 @@ func (r *Retrocard) GetActiveCards() ([]models.Retrocard, error) {
 
 func (r *Retrocard) CreateRetrocard(retrocard models.Retrocard) (string, error) {
 	id := ""
-	err := r.Db.QueryRow(context.Background(), `INSERT INTO retrocards (title, col, active) VALUES ($1, $2, $3) RETURNING id`, retrocard.Title, retrocard.Column, retrocard.Active).Scan(&id)
+	retrocard.Tidy()
+	err := retrocard.Validate()
+
+	if err != nil {
+		return id, err
+	}
+
+	err = r.Db.QueryRow(context.Background(), `INSERT INTO retrocards (title, col, active) VALUES ($1, $2, $3) RETURNING id`, retrocard.Title, retrocard.Column, retrocard.Active).Scan(&id)
 
 	return id, err
 }
