@@ -3,12 +3,12 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rob-lowcock/pioneer2023/models"
 )
 
 type User struct {
-	Db *pgx.Conn
+	Db *pgxpool.Pool
 }
 
 func (u *User) GetUserByUsername(username string) (models.User, error) {

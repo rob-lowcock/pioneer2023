@@ -1,8 +1,28 @@
 import { Bars2Icon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Retrocard from "../retro/retrocard";
 import Retrocolumn from "../retro/retrocolumn";
-import { getLatestBoard } from "../services/retro";
-import { useLoaderData } from "react-router-dom";
+import Retrocard from "../retro/retrocard";
+import { RetrocardType, createRetrocard, getLatestBoard } from "../services/retro";
+import { Form, useLoaderData } from "react-router-dom";
+
+export async function action({ request }: { request: Request }) {
+    const formData = await request.formData();
+    const title = formData.get("title");
+    const col = formData.get("col");
+    const errors = {
+        message: "",
+    }
+    
+    const retrocard: RetrocardType = {
+        id: null,
+        title: title?.toString() ?? "",
+        column: parseInt(col?.toString() ?? "0"),
+        active: true,
+    }
+
+    const card = await createRetrocard(retrocard);
+
+    return {card};
+}
 
 export async function loader() {
     const cards = await getLatestBoard();
@@ -27,6 +47,7 @@ export async function loader() {
 
     return { columns };
 }
+
 export default function Retro() {
     const { columns } = useLoaderData();
 

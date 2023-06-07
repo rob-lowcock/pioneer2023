@@ -11,7 +11,7 @@ export default function Retrocolumn(props: PropsWithChildren<RetroColumnProps>) 
         <div className="text-gray-500 font-title font-bold mb-4">
             <h2 className="font-title font-bold">{props.title} <span className="bg-gray-200 text-xs rounded-full ml-1 w-4 h-4 inline-block text-center">{props.column + 1}</span></h2>
         </div>
-        <RetroAddButton />
+        <RetroAddButton col={props.column} />
         {props.children}
     </div>
 }

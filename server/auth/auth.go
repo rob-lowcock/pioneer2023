@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/models"
 	"golang.org/x/crypto/bcrypt"
@@ -14,7 +14,7 @@ import (
 This comes with a massive health warning. JWTs are vulnerable to CSRF attacks. In time this will all need to be replaced with Auth0 or similar, but for the MVP this will have to do.
 */
 type Auth struct {
-	Db     *pgx.Conn
+	Db     *pgxpool.Pool
 	DbUser db.User
 }
 

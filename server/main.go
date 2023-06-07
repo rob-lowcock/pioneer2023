@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"github.com/rob-lowcock/pioneer2023/auth"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/handlers"
+	"github.com/rob-lowcock/pioneer2023/handlers/retrocard"
 	"github.com/rob-lowcock/pioneer2023/helpers"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Database connection error", err)
 	}
-	defer connection.Close(context.Background())
+	defer connection.Close()
 
 	dbUser := db.User{
 		Db: connection,
@@ -44,7 +44,7 @@ func main() {
 		Auth: auth,
 	}
 	healthHandler := handlers.HealthHandler{}
-	getRetrocardHandler := handlers.GetRetrocardHandler{
+	retrocardHandler := retrocard.RetrocardHandler{
 		RetrocardDb: dbRetrocard,
 	}
 
@@ -62,7 +62,7 @@ func main() {
 	http.Handle(
 		"/api/retrocards",
 		middleware.Adapt(
-			&getRetrocardHandler,
+			&retrocardHandler,
 			middleware.ContentType,
 			middleware.Cors(http.MethodGet),
 		),
@@ -82,3 +82,5 @@ func main() {
 	log.Print("Server stopped")
 
 }
+
+// For Katy.

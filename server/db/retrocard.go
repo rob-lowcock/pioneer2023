@@ -3,12 +3,12 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rob-lowcock/pioneer2023/models"
 )
 
 type Retrocard struct {
-	Db *pgx.Conn
+	Db *pgxpool.Pool
 }
 
 func (r *Retrocard) GetActiveCards() ([]models.Retrocard, error) {
@@ -31,7 +31,9 @@ func (r *Retrocard) GetActiveCards() ([]models.Retrocard, error) {
 	return retrocards, nil
 }
 
-func (r *Retrocard) CreateRetrocard(retrocard models.Retrocard) error {
-	_, err := r.Db.Exec(context.Background(), `INSERT INTO retrocards (title, column, active) VALUES ($1, $2, $3)`, retrocard.Title, retrocard.Column, retrocard.Active)
-	return err
+func (r *Retrocard) CreateRetrocard(retrocard models.Retrocard) (string, error) {
+	id := ""
+	err := r.Db.QueryRow(context.Background(), `INSERT INTO retrocards (title, col, active) VALUES ($1, $2, $3) RETURNING id`, retrocard.Title, retrocard.Column, retrocard.Active).Scan(&id)
+
+	return id, err
 }
