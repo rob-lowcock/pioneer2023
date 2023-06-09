@@ -1,18 +1,25 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/go-oauth2/oauth2/v4/errors"
+	"github.com/go-oauth2/oauth2/v4/manage"
+	"github.com/go-oauth2/oauth2/v4/server"
 	"github.com/joho/godotenv"
 	"github.com/rob-lowcock/pioneer2023/auth"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/handlers"
 	"github.com/rob-lowcock/pioneer2023/handlers/retrocard"
 	"github.com/rob-lowcock/pioneer2023/helpers"
+	pg "github.com/vgarvardt/go-oauth2-pg/v4"
+	"github.com/vgarvardt/go-pg-adapter/pgx4adapter"
 )
 
 func main() {
@@ -30,35 +37,65 @@ func main() {
 		Db: connection,
 	}
 
-	dbRetrocard := db.Retrocard{
-		Db: connection,
-	}
-
 	auth := auth.Auth{
 		Db:     connection,
 		DbUser: dbUser,
 	}
 
-	// Handlers
-	loginHandler := handlers.LoginHandler{
-		Auth: auth,
+	// Set up token management
+	manager := manage.NewDefaultManager()
+	adapter := pgx4adapter.NewPool(connection)
+	tokenStore, _ := pg.NewTokenStore(adapter, pg.WithTokenStoreGCInterval(time.Minute))
+	defer tokenStore.Close()
+
+	clientStore, _ := pg.NewClientStore(adapter)
+
+	manager.MapTokenStorage(tokenStore)
+	manager.MapClientStorage(clientStore)
+
+	srv := server.NewDefaultServer(manager)
+	srv.SetAllowGetAccessRequest(true)
+	srv.SetClientInfoHandler(server.ClientFormHandler)
+
+	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
+		log.Println("Internal Error:", err.Error())
+		return
+	})
+
+	srv.SetResponseErrorHandler(func(re *errors.Response) {
+		log.Println("Response Error:", re.Error.Error())
+	})
+
+	// TODO: Set up Auth Code with PKCE. For the time being we use straightforward password authorization instead
+	srv.SetUserAuthorizationHandler(func(w http.ResponseWriter, r *http.Request) (string, error) {
+		return "", errors.ErrAccessDenied
+	})
+
+	srv.SetPasswordAuthorizationHandler(func(ctx context.Context, clientID, username, password string) (string, error) {
+		user, err := auth.ValidateCredentials(username, password)
+		if err != nil {
+			return "", errors.ErrAccessDenied
+		}
+
+		return user.ID, nil
+	})
+
+	dbRetrocard := db.Retrocard{
+		Db: connection,
 	}
+
+	// Handlers
 	healthHandler := handlers.HealthHandler{}
 	retrocardHandler := retrocard.RetrocardHandler{
 		RetrocardDb: dbRetrocard,
+	}
+	loginHandler := handlers.LoginHandler{
+		AuthServer: srv,
 	}
 
 	middleware := helpers.Middleware{}
 
 	http.Handle("/api/health", middleware.ContentType(&healthHandler))
-	http.Handle(
-		"/api/login",
-		middleware.Adapt(
-			&loginHandler,
-			middleware.ContentType,
-			middleware.Cors(http.MethodPost),
-		),
-	)
 	http.Handle(
 		"/api/retrocards",
 		middleware.Adapt(
@@ -67,6 +104,14 @@ func main() {
 			middleware.Cors(http.MethodGet),
 		),
 	)
+	http.HandleFunc("/api/authorize", func(w http.ResponseWriter, r *http.Request) {
+		err := srv.HandleAuthorizeRequest(w, r)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	})
+	http.Handle("/api/token", middleware.Adapt(&loginHandler, middleware.Cors(http.MethodGet)))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

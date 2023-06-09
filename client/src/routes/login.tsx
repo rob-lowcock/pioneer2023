@@ -17,7 +17,7 @@ export async function action({ request }: { request: Request }) {
     }
     try {
         const token = await attemptLogin(email!.toString(), password!.toString());
-        console.log(token.data.id)
+        console.log(token)
     } catch (error: any) {
         errors.message = error.message;
     }

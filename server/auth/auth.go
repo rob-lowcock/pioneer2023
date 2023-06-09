@@ -1,9 +1,6 @@
 package auth
 
 import (
-	"os"
-
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/models"
@@ -18,6 +15,10 @@ type Auth struct {
 	DbUser db.User
 }
 
+// ValidateCredentials validates the provided username and password
+// against the corresponding user in the database.
+// It takes a username string and a password string as input parameters.
+// It returns a models.User struct and an error if the validation fails.
 func (a *Auth) ValidateCredentials(username, password string) (models.User, error) {
 	user, err := a.DbUser.GetUserByUsername(username)
 	if err != nil {
@@ -30,22 +31,4 @@ func (a *Auth) ValidateCredentials(username, password string) (models.User, erro
 	}
 
 	return user, nil
-}
-
-func (a *Auth) GenerateToken(user models.User) (string, error) {
-	key := os.Getenv("JWT_SECRET")
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Username,
-	})
-	return t.SignedString([]byte(key))
-}
-
-func (a *Auth) ValidateToken(token string) error {
-
-	jwt.WithValidMethods([]string{"HS256"})
-	_, err := jwt.NewParser(jwt.WithValidMethods([]string{"HS256"})).ParseWithClaims(token, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-
-	return err
 }
