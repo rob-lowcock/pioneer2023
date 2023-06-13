@@ -1,15 +1,25 @@
 package helpers
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/go-oauth2/oauth2/v4/manage"
 )
 
 type Middleware struct {
+	Manager *manage.Manager
 }
 
 type Adapter func(http.Handler) http.Handler
+
+type ContextKey string
+
+const (
+	UserIDContextKey ContextKey = "userID"
+)
 
 func (m Middleware) Adapt(h http.Handler, adapters ...Adapter) http.Handler {
 	for _, adapter := range adapters {
@@ -41,5 +51,27 @@ func (m Middleware) ContentType(next http.Handler) http.Handler {
 		w.Header().Add("Content-Type", "application/vnd.api+json")
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (m Middleware) Protected(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		header := r.Header.Get("Authorization")
+		if header == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		token := header[7:]
+
+		ti, err := m.Manager.LoadAccessToken(r.Context(), token)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), UserIDContextKey, ti.GetUserID())
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

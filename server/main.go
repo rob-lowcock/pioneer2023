@@ -93,7 +93,9 @@ func main() {
 		AuthServer: srv,
 	}
 
-	middleware := helpers.Middleware{}
+	middleware := helpers.Middleware{
+		Manager: manager,
+	}
 
 	http.Handle("/api/health", middleware.ContentType(&healthHandler))
 	http.Handle(
