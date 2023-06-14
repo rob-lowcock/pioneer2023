@@ -2,7 +2,8 @@ import { Bars2Icon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Retrocolumn from "../retro/retrocolumn";
 import Retrocard from "../retro/retrocard";
 import { RetrocardType, createRetrocard, getLatestBoard } from "../services/retro";
-import { useLoaderData } from "react-router-dom";
+import { redirect, useLoaderData } from "react-router-dom";
+import { UnauthorizedError } from "../utilities/errors";
 
 export async function action({ request }: { request: Request }) {
     const formData = await request.formData();
@@ -29,8 +30,15 @@ export async function action({ request }: { request: Request }) {
 }
 
 export async function loader() {
+    try {
+        const retrocards = await getLatestBoard();
+    } catch (e : any) {
+        if (e instanceof UnauthorizedError) {
+            return redirect("/login");
+        }
+        console.log(e);
+    }
     const cards = await getLatestBoard();
-
     const columns = [
         {
             id: 0,

@@ -1,6 +1,7 @@
 import { Form, redirect, useActionData } from "react-router-dom";
 import { attemptLogin } from "../services/auth";
 import { XCircleIcon } from "@heroicons/react/24/outline";
+import Cookies from "js-cookie";
 
 export async function action({ request }: { request: Request }) {
     const formData = await request.formData();
@@ -16,8 +17,10 @@ export async function action({ request }: { request: Request }) {
         return errors;
     }
     try {
-        const token = await attemptLogin(email!.toString(), password!.toString());
-        console.log(token)
+        const tokens = await attemptLogin(email!.toString(), password!.toString());
+        Cookies.set("access_token", tokens.access_token);
+        Cookies.set("refresh_token", tokens.refresh_token);
+        return redirect("/retro");
     } catch (error: any) {
         errors.message = error.message;
     }

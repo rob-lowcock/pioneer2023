@@ -36,7 +36,7 @@ func (m Middleware) Cors(methods ...string) Adapter {
 
 			if r.Method == "OPTIONS" {
 				w.Header().Add("Access-Control-Allow-Methods", strings.Join(methods, ", "))
-				w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+				w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Authorization")
 				w.WriteHeader(http.StatusOK)
 				return
 			}

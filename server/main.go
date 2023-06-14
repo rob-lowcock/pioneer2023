@@ -103,6 +103,7 @@ func main() {
 		middleware.Adapt(
 			&retrocardHandler,
 			middleware.ContentType,
+			middleware.Protected,
 			middleware.Cors(http.MethodGet),
 		),
 	)

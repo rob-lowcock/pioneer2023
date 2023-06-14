@@ -1,4 +1,5 @@
 import { Serializer } from "ts-japi";
+import { callAPI } from "../utilities/http";
 
 export type RetrocardType = {
     id: string | null;
@@ -8,43 +9,14 @@ export type RetrocardType = {
 }
 
 export async function getLatestBoard() {
-    const response = await fetch(import.meta.env.VITE_API_SERVER + '/api/retrocards?active=true');
-    if (response.ok) {
-        return response.json();
-    }
-
-    switch (response.status) {
-        case 400:
-            throw new Error('Invalid request');
-        case 500:
-            throw new Error('Oops! Something went wrong on our side - please try again');
-        default:
-            throw new Error('Something went wrong - please try again');
-    }
+    const response = await callAPI('/api/retrocards?active=true', 'GET');
+    
+    return response;
 }
 
 export async function createRetrocard(retrocard: RetrocardType) {
     const cardSerializer = new Serializer('retrocard');
     const serializedCard = await cardSerializer.serialize(retrocard);
 
-    const response = await fetch(import.meta.env.VITE_API_SERVER + '/api/retrocards', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(serializedCard)
-    });
-
-    if (response.ok) {
-        return;
-    }
-
-    switch (response.status) {
-        case 400:
-            throw new Error('Invalid input');
-        case 500:
-            throw new Error('Oops! Something went wrong on our side - please try again');
-        default:
-            throw new Error('Something went wrong - please try again');
-    }
+    await callAPI('/api/retrocards', 'POST', serializedCard);
 }
