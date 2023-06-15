@@ -49,16 +49,18 @@ async function attemptAPICall(url: string, method: string, body?: any) {
 
 async function attemptWithNewTokens(url: string, method: string, body?: any) {
     const data = new FormData();
-    data.append('refresh_token', 'admin');
+    const refreshToken = Cookies.get('refresh_token');
+    if (!refreshToken) {
+        throw new Error('No refresh token');
+    }
+
+    data.append('refresh_token', refreshToken);
     data.append('grant_type', 'refresh_token');
     data.append('client_id', import.meta.env.VITE_CLIENT_ID);
     data.append('scope', 'read');
 
     const getNewTokens = await fetch(import.meta.env.VITE_API_SERVER + '/api/token', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
         body: data
     });
 
@@ -69,7 +71,7 @@ async function attemptWithNewTokens(url: string, method: string, body?: any) {
 
         const reattempt = await attemptAPICall(url, method, body);
         if (reattempt.ok) {
-            return reattempt.json();
+            return reattempt;
         }
 
         throw new Error("Failed to call API after setting new tokens");
