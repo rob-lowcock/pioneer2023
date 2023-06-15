@@ -2,8 +2,9 @@ import { Bars2Icon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Retrocolumn from "../retro/retrocolumn";
 import Retrocard from "../retro/retrocard";
 import { RetrocardType, createRetrocard, getLatestBoard } from "../services/retro";
-import { redirect, useLoaderData } from "react-router-dom";
+import { redirect, useLoaderData, useRevalidator } from "react-router-dom";
 import { UnauthorizedError } from "../utilities/errors";
+import { useInterval } from "usehooks-ts";
 
 export async function action({ request }: { request: Request }) {
     const formData = await request.formData();
@@ -62,6 +63,13 @@ export async function loader() {
 
 export default function Retro() {
     const { columns } = useLoaderData();
+    const revalidator = useRevalidator();
+
+    useInterval(() => {
+        if (revalidator.state === "idle") {
+            revalidator.revalidate();
+        }
+    }, 1000);
 
     return <div className="h-screen bg-white">
         <nav className="p-6 border-b border-brdgray text-webscale">
