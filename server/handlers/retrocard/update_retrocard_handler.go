@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/jsonapi"
 	"github.com/rob-lowcock/pioneer2023/db"
 	"github.com/rob-lowcock/pioneer2023/models"
@@ -21,6 +22,12 @@ func (h UpdateRetrocardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	requestModel := new(models.Retrocard)
 	err := jsonapi.UnmarshalPayload(r.Body, requestModel)
+
+	if chi.URLParam(r, "id") != requestModel.ID {
+		log.Println("id mismatch in update retrocard request")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if err != nil {
 		log.Println(err)

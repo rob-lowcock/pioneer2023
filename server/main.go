@@ -93,6 +93,9 @@ func main() {
 	createRetrocardHandler := retrocard.CreateRetrocardHandler{
 		RetrocardDb: dbRetrocard,
 	}
+	updateRetrocardHandler := retrocard.UpdateRetrocardHandler{
+		RetrocardDb: dbRetrocard,
+	}
 	loginHandler := handlers.LoginHandler{
 		AuthServer: srv,
 	}
@@ -109,6 +112,7 @@ func main() {
 		r.Use(middleware.Protected, middleware.ContentType)
 		r.Get("/", getRetrocardHandler.ServeHTTP)
 		r.Post("/", createRetrocardHandler.ServeHTTP)
+		r.Put("/{id}", updateRetrocardHandler.ServeHTTP)
 	})
 
 	r.HandleFunc("/api/authorize", func(w http.ResponseWriter, r *http.Request) {
