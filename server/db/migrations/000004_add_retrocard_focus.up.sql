@@ -1,0 +1,3 @@
+ALTER TABLE retrocards
+ADD COLUMN focus BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN discussed_at TIMESTAMP;
