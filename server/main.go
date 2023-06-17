@@ -118,7 +118,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	})
-	r.Handle("/api/token", middleware.Adapt(&loginHandler, middleware.Cors(http.MethodGet)))
+	r.Handle("/api/token", middleware.Adapt(&loginHandler))
 
 	// Graceful shutdown
 	done := make(chan os.Signal, 1)
