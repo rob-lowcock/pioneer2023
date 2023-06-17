@@ -10,6 +10,8 @@ require (
 	golang.org/x/crypto v0.6.0
 )
 
+require github.com/go-chi/chi/v5 v5.0.8 // indirect
+
 require (
 	github.com/go-oauth2/oauth2 v3.9.2+incompatible
 	github.com/go-oauth2/oauth2/v4 v4.5.2 // indirect

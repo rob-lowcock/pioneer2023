@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	"github.com/go-oauth2/oauth2/v4/manage"
 	"github.com/go-oauth2/oauth2/v4/server"
@@ -86,7 +87,10 @@ func main() {
 
 	// Handlers
 	healthHandler := handlers.HealthHandler{}
-	retrocardHandler := retrocard.RetrocardHandler{
+	getRetrocardHandler := retrocard.GetRetrocardHandler{
+		RetrocardDb: dbRetrocard,
+	}
+	createRetrocardHandler := retrocard.CreateRetrocardHandler{
 		RetrocardDb: dbRetrocard,
 	}
 	loginHandler := handlers.LoginHandler{
@@ -97,30 +101,31 @@ func main() {
 		Manager: manager,
 	}
 
-	http.Handle("/api/health", middleware.ContentType(&healthHandler))
-	http.Handle(
-		"/api/retrocards",
-		middleware.Adapt(
-			&retrocardHandler,
-			middleware.ContentType,
-			middleware.Protected,
-			middleware.Cors(http.MethodGet),
-		),
-	)
-	http.HandleFunc("/api/authorize", func(w http.ResponseWriter, r *http.Request) {
+	// Routes
+	r := chi.NewRouter()
+	r.Use(middleware.Cors(http.MethodGet))
+	r.Handle("/api/health", middleware.ContentType(&healthHandler))
+	r.Route("/api/retrocards", func(r chi.Router) {
+		r.Use(middleware.Protected, middleware.ContentType)
+		r.Get("/", getRetrocardHandler.ServeHTTP)
+		r.Post("/", createRetrocardHandler.ServeHTTP)
+	})
+
+	r.HandleFunc("/api/authorize", func(w http.ResponseWriter, r *http.Request) {
 		err := srv.HandleAuthorizeRequest(w, r)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	})
-	http.Handle("/api/token", middleware.Adapt(&loginHandler, middleware.Cors(http.MethodGet)))
+	r.Handle("/api/token", middleware.Adapt(&loginHandler, middleware.Cors(http.MethodGet)))
 
+	// Graceful shutdown
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err := http.ListenAndServe("127.0.0.1:8123", nil); err != nil && err != http.ErrServerClosed {
+		if err := http.ListenAndServe("127.0.0.1:8123", r); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
 	}()
