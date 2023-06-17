@@ -24,7 +24,7 @@ export async function callAPI(url: string, method: string, body?: any) {
             }
             break;
         case 400:
-            throw new Error('Invalid request - is that me!');
+            throw new Error('Invalid request');
         case 500:
             throw new Error('Oops! Something went wrong on our side - please try again');
         default:

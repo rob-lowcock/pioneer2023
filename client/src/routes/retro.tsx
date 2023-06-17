@@ -1,7 +1,8 @@
 import { Bars2Icon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Retrocolumn from "../retro/retrocolumn";
 import Retrocard from "../retro/retrocard";
-import { RetrocardType, createRetrocard, getLatestBoard } from "../services/retro";
+import { createRetrocard, getLatestBoard, highlightCard } from "../services/retro";
+import { RetrocardType } from "../types/retrocard";
 import { redirect, useLoaderData, useRevalidator } from "react-router-dom";
 import { UnauthorizedError } from "../utilities/errors";
 import { useInterval } from "usehooks-ts";
@@ -19,6 +20,7 @@ export async function action({ request }: { request: Request }) {
         title: title?.toString() ?? "",
         column: parseInt(col?.toString() ?? "0"),
         active: true,
+        focus: false,
     }
 
     try {
@@ -32,38 +34,49 @@ export async function action({ request }: { request: Request }) {
 
 export async function loader() {
     try {
-        const retrocards = await getLatestBoard();
+        const cards = await getLatestBoard();
+
+        const columns = [
+            {
+                id: 0,
+                name: "I'm happy about...",
+                cards: cards.filter((card: any) => card.column === 0),
+            },
+            {
+                id: 1,
+                name: "I'm wondering about...",
+                cards: cards.filter((card: any) => card.column === 1),
+            },
+            {
+                id: 2,
+                name: "I'm sad about...",
+                cards: cards.filter((card: any) => card.column === 2),
+            },
+        ];
+    
+        const highlightedCard = cards.filter((card: any) => card.focus === true)[0];
+    
+        return { columns, highlightedCard };
     } catch (e : any) {
         if (e instanceof UnauthorizedError) {
             return redirect("/login");
         }
         console.log(e);
-    }
-    const cards = await getLatestBoard();
-    const columns = [
-        {
-            id: 0,
-            name: "I'm happy about...",
-            cards: cards.data.filter((card: any) => card.attributes.column === 0),
-        },
-        {
-            id: 1,
-            name: "I'm wondering about...",
-            cards: cards.data.filter((card: any) => card.attributes.column === 1),
-        },
-        {
-            id: 2,
-            name: "I'm sad about...",
-            cards: cards.data.filter((card: any) => card.attributes.column === 2),
-        },
-    ];
 
-    return { columns };
+        return null
+    }
+}
+
+function buildSelectHandler(highlightedCard: RetrocardType): (newCard: RetrocardType) => void {
+    return (newCard: RetrocardType) => {
+        highlightCard(highlightedCard, newCard);
+    }
 }
 
 export default function Retro() {
-    const { columns } = useLoaderData();
+    const { columns, highlightedCard } = useLoaderData();
     const revalidator = useRevalidator();
+    const selectHandler = buildSelectHandler(highlightedCard);
 
     useInterval(() => {
         if (revalidator.state === "idle") {
@@ -78,14 +91,16 @@ export default function Retro() {
                 <button className="px-3 mr-4 text-black"><Bars2Icon className="h-6 w-6" /></button>
             </div>
         </nav>
+        { highlightedCard ? 
         <div className="p-4 mt-4 mx-4 bg-webscale text-white rounded-lg">
             <h2 className="font-bold text-sm">We're talking about:</h2>
-            <p className="text-2xl font-title text-center p-2 pb-4">Are we doing testing the right way?</p>
+            <p className="text-2xl font-title text-center p-2 pb-4">{highlightedCard.title}</p>
             <div className="flex flex-row">
                 <a href="#" className="block basis-1/2 text-sm mr-2 text-center bg-webscale-lighter hover:bg-webscale-lighter2 p-2 rounded-lg"><PlusIcon className="h-6 w-6 inline-block" /> Add an action</a>
                 <a href="#" className="block basis-1/2 text-sm ml-2 text-center bg-webscale-lighter hover:bg-webscale-lighter2 p-2 rounded-lg"><CheckIcon className="h-6 w-6 inline-block" /> Mark as done</a>
             </div>
         </div>
+        : <></>}
         { columns.length ? (
         <div className="md:columns-3 md:gap-0">
             { columns.map((column: any) => (
@@ -93,7 +108,7 @@ export default function Retro() {
                     { column.cards.length ? (
                         <>
                             { column.cards.map((card: any) => (
-                                <Retrocard content={card.attributes.title} key={card.id} />    
+                                <Retrocard content={card} key={card.id} selectHandler={selectHandler} />
                             ))}
                         </>
                     ) : (

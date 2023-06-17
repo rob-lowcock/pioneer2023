@@ -12,7 +12,7 @@ type Retrocard struct {
 }
 
 func (r *Retrocard) GetActiveCards() ([]models.Retrocard, error) {
-	rows, err := r.Db.Query(context.Background(), `SELECT id, title, col, active, focus, discussed_at FROM retrocards WHERE active = true`)
+	rows, err := r.Db.Query(context.Background(), `SELECT id, title, col, active, focus, discussed_at FROM retrocards WHERE active = true ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}

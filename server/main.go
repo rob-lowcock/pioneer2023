@@ -106,7 +106,7 @@ func main() {
 
 	// Routes
 	r := chi.NewRouter()
-	r.Use(middleware.Cors(http.MethodGet))
+	r.Use(middleware.Cors(http.MethodGet, http.MethodPost, http.MethodPut))
 	r.Handle("/api/health", middleware.ContentType(&healthHandler))
 	r.Route("/api/retrocards", func(r chi.Router) {
 		r.Use(middleware.Protected, middleware.ContentType)
