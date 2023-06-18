@@ -4,6 +4,7 @@ export type RetrocardType = {
     column: number;
     active: boolean;
     focus: boolean;
+    discussedAt: string | null;
 };
 
 type serializedRetrocardType = {
@@ -13,6 +14,7 @@ type serializedRetrocardType = {
         column: number;
         active: boolean;
         focus: boolean;
+        discussed_at: string;
     };
 }
 
@@ -22,7 +24,8 @@ export function deserializeOne(json: serializedRetrocardType) : RetrocardType {
         title: json.attributes.title,
         column: json.attributes.column,
         active: json.attributes.active,
-        focus: json.attributes.focus
+        focus: json.attributes.focus,
+        discussedAt: json.attributes.discussed_at
     };
 
     return card;

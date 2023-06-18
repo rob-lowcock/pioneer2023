@@ -19,7 +19,7 @@ export async function callAPI(url: string, method: string, body?: any) {
             try {
                 const response2 = await attemptWithNewTokens(url, method, body);
                 return response2.json();
-            } catch (error) {
+            } catch (error: any) {
                 throw new UnauthorizedError(error.message);
             }
             break;

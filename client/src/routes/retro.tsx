@@ -21,6 +21,7 @@ export async function action({ request }: { request: Request }) {
         column: parseInt(col?.toString() ?? "0"),
         active: true,
         focus: false,
+        discussedAt: null,
     }
 
     try {
@@ -74,7 +75,7 @@ function buildSelectHandler(highlightedCard: RetrocardType): (newCard: Retrocard
 }
 
 export default function Retro() {
-    const { columns, highlightedCard } = useLoaderData();
+    const { columns, highlightedCard } = useLoaderData() as any;
     const revalidator = useRevalidator();
     const selectHandler = buildSelectHandler(highlightedCard);
 
